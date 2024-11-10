@@ -1,24 +1,24 @@
 const Cliente = require("../models/Cliente");
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+// Registro de cliente
 exports.register = async (req, res) => {
   try {
-    const { nome, email, senha } = req.body;
-    const hashedPassword = await bcrypt.hash(senha, 10);
-    const cliente = new Cliente({ nome, email, senha: hashedPassword });
+    const { nome, email, senha, telefone, data_nascimento, objetivo } = req.body;
+    const cliente = new Cliente({ nome, email, senha, telefone, data_nascimento, objetivo });
     await cliente.save();
     res.status(201).json(cliente);
   } catch (err) {
-    res.status(400).json({ message: "Erro ao criar cliente", err });
+    res.status(400).json({ message: "Erro ao registrar cliente", err });
   }
 };
 
+// Login do cliente
 exports.login = async (req, res) => {
   try {
     const { email, senha } = req.body;
     const cliente = await Cliente.findOne({ email });
-    if (!cliente || !(await bcrypt.compare(senha, cliente.senha))) {
+    if (!cliente || !(await cliente.verificarSenha(senha))) {
       return res.status(401).json({ message: "Credenciais inválidas." });
     }
 
@@ -28,4 +28,26 @@ exports.login = async (req, res) => {
     res.status(400).json({ message: "Erro ao fazer login", err });
   }
 };
-    
+
+// Atualizar informações do cliente autenticado
+exports.updateCliente = async (req, res) => {
+  try {
+    const updates = req.body;
+    const cliente = await Cliente.findByIdAndUpdate(req.user.id, updates, { new: true });
+    if (!cliente) return res.status(404).json({ message: "Cliente não encontrado" });
+    res.json(cliente);
+  } catch (err) {
+    res.status(400).json({ message: "Erro ao atualizar cliente", err });
+  }
+};
+
+// Deletar o cliente autenticado
+exports.deleteCliente = async (req, res) => {
+  try {
+    const cliente = await Cliente.findByIdAndDelete(req.user.id);
+    if (!cliente) return res.status(404).json({ message: "Cliente não encontrado" });
+    res.json({ message: "Cliente deletado com sucesso" });
+  } catch (err) {
+    res.status(400).json({ message: "Erro ao deletar cliente", err });
+  }
+};

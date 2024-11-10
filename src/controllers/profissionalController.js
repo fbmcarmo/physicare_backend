@@ -38,3 +38,25 @@ exports.getClientes = async (req, res) => {
     res.status(400).json({ message: "Erro ao obter clientes", err });
   }
 };
+
+exports.updateProfissional = async (req, res) => {
+  try {
+    const updates = req.body;
+    const profissional = await Profissional.findByIdAndUpdate(req.user.id, updates, { new: true });
+    if (!profissional) return res.status(404).json({ message: "Profissional não encontrado" });
+    res.json(profissional);
+  } catch (err) {
+    res.status(400).json({ message: "Erro ao atualizar profissional", err });
+  }
+};
+
+// Deletar o profissional autenticado
+exports.deleteProfissional = async (req, res) => {
+  try {
+    const profissional = await Profissional.findByIdAndDelete(req.user.id);
+    if (!profissional) return res.status(404).json({ message: "Profissional não encontrado" });
+    res.json({ message: "Profissional deletado com sucesso" });
+  } catch (err) {
+    res.status(400).json({ message: "Erro ao deletar profissional", err });
+  }
+};

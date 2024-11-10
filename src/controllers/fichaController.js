@@ -38,3 +38,39 @@ exports.getFichaById = async (req, res) => {
     res.status(400).json({ message: "Erro ao obter ficha de exercício", err });
   }
 };
+
+// Atualizar ficha de exercício (restrito ao profissional que a criou)
+exports.updateFicha = async (req, res) => {
+  try {
+    const { fichaId } = req.params;
+    const updates = req.body;
+
+    const ficha = await FichaExercicio.findOneAndUpdate(
+      { _id: fichaId, profissionalId: req.user.id }, // Verifica se o profissional é o criador da ficha
+      updates,
+      { new: true }
+    );
+
+    if (!ficha) return res.status(404).json({ message: "Ficha de exercício não encontrada ou acesso não autorizado" });
+    res.json(ficha);
+  } catch (err) {
+    res.status(400).json({ message: "Erro ao atualizar ficha de exercício", err });
+  }
+};
+
+// Deletar ficha de exercício (restrito ao profissional que a criou)
+exports.deleteFicha = async (req, res) => {
+  try {
+    const { fichaId } = req.params;
+
+    const ficha = await FichaExercicio.findOneAndDelete({
+      _id: fichaId,
+      profissionalId: req.user.id // Verifica se o profissional é o criador da ficha
+    });
+
+    if (!ficha) return res.status(404).json({ message: "Ficha de exercício não encontrada ou acesso não autorizado" });
+    res.json({ message: "Ficha de exercício deletada com sucesso" });
+  } catch (err) {
+    res.status(400).json({ message: "Erro ao deletar ficha de exercício", err });
+  }
+};
