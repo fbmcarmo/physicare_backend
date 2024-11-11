@@ -60,3 +60,25 @@ exports.deleteProfissional = async (req, res) => {
     res.status(400).json({ message: "Erro ao deletar profissional", err });
   }
 };
+
+exports.listarProfissionais = async (req, res) => {
+  try {
+    const profissionais = await Profissional.find();
+    res.json(profissionais);
+  } catch (error) {
+    res.status(500).json({ message: "Erro ao listar profissionais" });
+  }
+};
+
+// Obter profissional por ID
+exports.obterProfissionalPorId = async (req, res) => {
+  try {
+    const profissional = await Profissional.findById(req.params.id).select("-senha"); // Oculta a senha
+    if (!profissional) {
+      return res.status(404).json({ message: "Profissional não encontrado" });
+    }
+    res.json(profissional);
+  } catch (error) {
+    res.status(500).json({ message: "Erro ao obter profissional" });
+  }
+};
