@@ -70,7 +70,7 @@ async function aceitarSolicitacao(req, res) {
 // Rejeitar Solicitação
 async function rejeitarSolicitacao(req, res) {
   const { solicitacaoId } = req.params;
-  const profissionalId = req.user._id;
+  const profissionalId = req.user.id;
 
   try {
     const solicitacao = await Solicitacao.findById(solicitacaoId);
