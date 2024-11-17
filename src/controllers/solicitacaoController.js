@@ -83,13 +83,22 @@ async function rejeitarSolicitacao(req, res) {
       return res.status(403).json({ error: "Acesso negado." });
     }
 
-    solicitacao.status = "Rejeitado";
-    await solicitacao.save();
-    res.status(200).json({ message: "Solicitação rejeitada." });
+    // Usar deleteOne() em vez de remove()
+    await solicitacao.deleteOne();
+
+    // Deletar as fichas associadas
+    await Ficha.deleteMany({
+      clienteId: solicitacao.clienteId,
+      profissionalId: solicitacao.profissionalId
+    });
+
+    res.status(200).json({ message: "Solicitação rejeitada e fichas deletadas." });
   } catch (error) {
+    console.error("Erro ao rejeitar solicitação:", error);
     res.status(500).json({ error: "Erro ao rejeitar solicitação." });
   }
 }
+
 
 // Listar todas as solicitações
 async function listarSolicitacoes(req, res) {
@@ -145,14 +154,26 @@ async function finalizarContato(req, res) {
       return res.status(403).json({ error: "Acesso negado." });
     }
 
+    // Alterar o status para "Finalizado"
     solicitacao.status = "Finalizado";
     await solicitacao.save();
 
-    res.status(200).json({ message: "Contato finalizado com sucesso." });
+    // Deletar a solicitação
+    await solicitacao.deleteOne();
+
+    // Deletar as fichas associadas
+    await Ficha.deleteMany({
+      clienteId: solicitacao.clienteId,
+      profissionalId: solicitacao.profissionalId
+    });
+
+    res.status(200).json({ message: "Contato finalizado e fichas deletadas." });
   } catch (error) {
+    console.error("Erro ao finalizar o contato:", error);
     res.status(500).json({ error: "Erro ao finalizar o contato." });
   }
 }
+
 
 module.exports = {
   solicitarApoio,
