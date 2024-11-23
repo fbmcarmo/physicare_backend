@@ -15,10 +15,22 @@ const app = express();
 app.use(express.json());
 
 // Configurar o CORS para permitir requisições do frontend
+const allowedOrigins = [
+  'http://localhost:3001', 
+  'http://localhost:3000',
+  'http://localhost:8081'
+];
+
 app.use(cors({
-  origin: 'http://localhost:3001', // substitua pela URL do seu frontend
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true // Permitir cookies, se necessário
+  credentials: true // Permitir cookies
 }));
 
 // Conectar ao banco de dados
