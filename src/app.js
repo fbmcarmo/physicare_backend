@@ -14,23 +14,16 @@ const solicitacaoRoutes = require("./routes/solicitacaoRoutes");
 const app = express();
 app.use(express.json());
 
-// Configurar o CORS para permitir requisições do frontend
-const allowedOrigins = [
-  'http://localhost:3001', 
-  'http://localhost:3000',
-  'http://localhost:8081'
-];
+app.use((req, res, next) => {
+  console.log(`Requisição recebida de: ${req.get('Origin')}`);
+  next();
+});
 
+// Configurar o CORS para permitir todas as origens
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true // Permitir cookies
+  origin: "*", // Permite todas as origens
+  methods: ["GET", "POST", "PUT", "DELETE"], // Permite os métodos HTTP listados
+  credentials: true // Permite o envio de cookies e cabeçalhos de autenticação, se necessário
 }));
 
 // Conectar ao banco de dados
@@ -106,7 +99,7 @@ async function popularBanco() {
   }
 }
 
-// Registrar rotas
+// Registrar as rotas
 app.use("/clientes", clienteRoutes);
 app.use("/profissionais", profissionalRoutes);
 app.use("/fichas", fichaRoutes);
@@ -116,5 +109,5 @@ app.use("/solicitacoes", solicitacaoRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
-  popularBanco();
+  popularBanco(); // Popular dados iniciais no banco quando o servidor for iniciado
 });
